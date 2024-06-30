@@ -20,3 +20,6 @@ def create_dataBase(nome_banco, nome_tabela):
         conexao.close()
     except:
         print(f"Erro ao criar o banco: '{nome_banco}'")
+
+if __name__ == "__main__":
+    create_dataBase("tr2.db", "ultrasonic")
