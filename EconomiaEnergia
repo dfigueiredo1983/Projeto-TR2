@@ -1,0 +1,62 @@
+Para o algoritmo de economia de energia foi idealizado uma máquina de estados para cada elemento que
+compoem o sistema, ou seja, uma máquina de estados para o receptor e uma máquina de estados para o transmissor
+Abaixo temos os passos para cada uma delas
+
+Máquina de estados para o Transmissor
+
+Estado Inicial: SYNC_WAIT
+
+Estados:
+- SYNC_WAIT: Aguardando sinal de sincronização do receptor
+- SYNC_RETRY: Tentando enviar sinal de sincronização novamente
+- DATA_SEND: Enviando dados junto com informações de sincronização
+- SLEEP_MODE: Modo de sono após falhas consecutivas de sincronização
+
+Transições:
+1. SYNC_WAIT -> SYNC_RETRY (timeout de sincronização)
+2. SYNC_WAIT -> DATA_SEND (sincronização bem-sucedida)
+3. DATA_SEND -> SYNC_RETRY (falha no envio de dados)
+4. DATA_SEND -> SLEEP_MODE (falhas consecutivas)
+
+Ações:
+- Enviar sinal de sincronização
+- Enviar dados com informações de sincronização e número de sequência
+- Incrementar número de sequência
+- Salvar número de falhas na EEPROM
+- Entrar em modo de sono por 5 minutos após falhas consecutivas
+
+
+Máquina de estados para o receptor
+
+Estado Inicial: SYNC_WAIT
+
+Estados:
+- SYNC_WAIT: Aguardando sinal de sincronização do transmissor
+- DATA_RECEIVE: Recebendo e processando dados do transmissor
+
+Transições:
+1. SYNC_WAIT -> DATA_RECEIVE (sincronização recebida)
+2. DATA_RECEIVE -> SYNC_WAIT (timeout para recebimento de dados)
+
+Ações:
+- Enviar ACK de confirmação após sincronização
+- Processar dados recebidos, incluindo número de sequência
+- Re-sincronizar periodicamente
+
+
+Suscinta explicação de cada uma das máquinas de estados
+
+Explicação
+
+    Transmissor: 
+    Inicia aguardando o sinal de sincronização do receptor (SYNC_WAIT). 
+    Se não receber o sinal dentro do tempo limite, transita para SYNC_RETRY para tentar novamente. 
+    Após sincronização bem-sucedida, transita para DATA_SEND para enviar dados junto com informações de sincronização e número de sequência. 
+    Em caso de falha no envio de dados, retorna para SYNC_RETRY. 
+    Após um número configurável de falhas consecutivas, entra em SLEEP_MODE por 5 minutos para economia de energia.
+
+    Receptor: 
+    Inicia aguardando o sinal de sincronização do transmissor (SYNC_WAIT). 
+    Quando recebe o sinal, transita para DATA_RECEIVE para receber e processar os dados, incluindo o número de sequência. 
+    Após um tempo limite, retorna para SYNC_WAIT para aguardar a próxima sincronização. 
+    Periodicamente, o receptor pode re-sincronizar para manter a comunicação alinhada.
